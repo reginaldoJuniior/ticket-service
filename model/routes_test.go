@@ -1,20 +1,18 @@
-package repository_test
+package model_test
 
 import (
-	"ticket-inventory/model"
-	"ticket-inventory/repository"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"ticket-inventory/model"
 )
 
 var _ = Describe("ListRoutes", func() {
 	Context("when listing a single node route", func() {
 		It("returns the route correctly", func() {
 			station := model.Station{Name: "Station A"}
-			node := &repository.NodeRoute{Station: station, DistanceInMinutes: 10}
+			node := &model.NodeRoute{Station: station, DistanceInMinutes: 10}
 
-			result := repository.ListRoutes(node)
+			result := model.ListRoutes(node)
 
 			expected := "Station A"
 			Expect(result).To(Equal(expected))
@@ -26,11 +24,12 @@ var _ = Describe("ListRoutes", func() {
 			stationA := model.Station{Name: "Station A"}
 			stationB := model.Station{Name: "Station B"}
 			stationC := model.Station{Name: "Station C"}
-			nodeC := &repository.NodeRoute{Station: stationC, DistanceInMinutes: 30}
-			nodeB := &repository.NodeRoute{Station: stationB, DistanceInMinutes: 20, Next: nodeC}
-			nodeA := &repository.NodeRoute{Station: stationA, DistanceInMinutes: 10, Next: nodeB}
 
-			result := repository.ListRoutes(nodeA)
+			nodeA := model.NewNodeRoute(stationA)
+			nodeA.AppendStation(stationB, 10)
+			nodeA.AppendStation(stationC, 20)
+
+			result := model.ListRoutes(nodeA)
 
 			expected := "Station A (10 min) -> Station B (20 min) -> Station C"
 			Expect(result).To(Equal(expected))
@@ -39,7 +38,7 @@ var _ = Describe("ListRoutes", func() {
 
 	Context("when listing an empty route list", func() {
 		It("returns an empty string", func() {
-			result := repository.ListRoutes(nil)
+			result := model.ListRoutes(nil)
 
 			expected := ""
 			Expect(result).To(Equal(expected))

@@ -1,4 +1,4 @@
-package repository_test
+package model_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestRepository(t *testing.T) {
+func TestModel(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Repository Suite")
+	RunSpecs(t, "Model Suite")
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"sync"
 	"ticket-inventory/model"
 )
@@ -9,6 +10,7 @@ type ReservationRepository interface {
 	SaveBook(book model.Booking)
 	GetAllBookings() []model.Booking
 	FindSeat(code string, service model.Service) (model.Seat, error)
+	CheckSeatAvailability(code string)
 }
 
 var instance Reservations
@@ -24,8 +26,9 @@ func NewReservationRepository() ReservationRepository {
 }
 
 type Reservations struct {
-	Bookings []model.Booking
-	mutex    sync.Mutex
+	Bookings      []model.Booking
+	ReservedSeats map[string]struct{}
+	mutex         sync.Mutex
 }
 
 func (r *Reservations) FindSeat(code string, service model.Service) (model.Seat, error) {
@@ -38,8 +41,23 @@ func (r *Reservations) SaveBook(book model.Booking) {
 	defer r.mutex.Unlock()
 
 	r.Bookings = append(r.Bookings, book)
+	r.ReservedSeats[book.Key()] = struct{}{}
+}
+
+func (r *Reservations) GetBookDetails(passenger model.Passenger) (*model.Booking, error) {
+	for _, b := range r.Bookings {
+		if b.Passenger.Name == passenger.Name {
+			return &b, nil
+		}
+	}
+	return nil, errors.New("booking not found")
 }
 
 func (r *Reservations) GetAllBookings() []model.Booking {
 	return r.Bookings
+}
+
+func (r *Reservations) CheckSeatAvailability(code string) {
+	//TODO implement me
+	panic("implement me")
 }
