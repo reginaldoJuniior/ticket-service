@@ -2,35 +2,33 @@ package usecases
 
 import (
 	"ticket-inventory/model"
-	"ticket-inventory/repository"
 )
 
-// Handle the booking reservation without allowing duplication
+// ReservationRepository is an interface for booking reservation repository
+type ReservationRepository interface {
+	SaveBook(book model.Booking) error
+	GetAllBookings() []model.Booking
+	FindSeat(code string, service model.Service) (model.Seat, error)
+	FindBook(bookKey string) (*model.Booking, error)
+}
 
 // BookingReservation is a use case for booking reservation
 type BookingReservation struct {
-	reservationRepo repository.ReservationRepository
+	reservationRepo ReservationRepository
 }
 
-func NewBookingReservation(reservationRepo repository.ReservationRepository) BookingReservation {
-	return BookingReservation{
+func NewBookingReservation(reservationRepo ReservationRepository) *BookingReservation {
+	return &BookingReservation{
 		reservationRepo: reservationRepo,
 	}
 }
 
-func (b BookingReservation) ReservingSeats(p model.Passenger, t model.Ticket) model.Booking {
-	booking := model.Booking{
-		Passenger: p,
-		Ticket:    t,
-	}
-
-	return booking
+// CreateBooking simulates a booking creation
+// Helper methods for booking management
+func (b *BookingReservation) CreateBooking(booking model.Booking) error {
+	return b.reservationRepo.SaveBook(booking)
 }
 
-func (b BookingReservation) CheckSeatAvailability(code string) (bool, error) {
-	seat, err := b.reservationRepo.FindSeat(code, model.Service{})
-	if err != nil {
-		return false, err
-	}
-	return seat.Booked, nil
+func (b *BookingReservation) GetAllBookings() []model.Booking {
+	return b.reservationRepo.GetAllBookings()
 }

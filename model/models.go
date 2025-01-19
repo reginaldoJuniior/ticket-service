@@ -1,31 +1,37 @@
 package model
 
-import "fmt"
-
-// Define structs in Golang for Station, Route, Service, Carriage, Seat,
-// Passenger, Ticket, and Booking.
-type Passenger struct {
-	Name    string
-	Tickets []Ticket
+type Station struct {
+	Name string
 }
 
-type Ticket struct {
-	Code  string
-	Seat  Seat
-	Buyer Passenger
-	Class string
+type Route struct {
+	ID    string
+	Stops []Station
+}
+
+type Service struct {
+	ID      string
+	RouteID string
+	Date    string
+}
+
+type Carriage struct {
+	ID    string
+	Seats []Seat
+}
+
+type Seat struct {
+	ID          string
+	ComfortZone string // First-class, Second-class
+}
+
+type Passenger struct {
+	Name string
 }
 
 type Booking struct {
+	ID        string
 	Passenger Passenger
-	Ticket    Ticket
-	Service   Service
-}
-
-func (b *Booking) Key() string {
-	return fmt.Sprintf("%s-%s-%s-%s",
-		b.Passenger.Name,
-		b.Ticket.Code,
-		b.Ticket.Seat.Code,
-		b.Service.Key())
+	ServiceID string
+	Seat      string
 }
