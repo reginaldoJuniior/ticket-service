@@ -1,104 +1,72 @@
 package model_test
 
 import (
-	"ticket-inventory/model"
-	"time"
-
+	"errors"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"ticket-inventory/model"
+	"ticket-inventory/repository"
 )
 
-var _ = Describe("Booking", func() {
-	Context("when generating a service key", func() {
-		It("returns the correct key for a valid booking", func() {
-			passenger := model.Passenger{Name: "John Doe"}
-			seat := model.Seat{Code: "A1"}
-			ticket := model.Ticket{Code: "T123", Seat: seat, Buyer: passenger, Class: "First"}
+var _ = Describe("Reservations", func() {
+	var (
+		reservations *repository.Reservations
+		booking      model.Booking
+	)
+	reservations = repository.NewReservationRepository()
 
-			layout := "15h04"
-			hour, err := time.Parse(layout, "10h30")
-			Expect(err).To(BeNil())
-			service := model.Service{
-				Code: "S456",
-				Hour: hour,
-				Train: model.Train{
-					Code: "ATR",
-				},
-				Route: model.Route{
-					To: model.Station{Name: "Station A"}, From: model.Station{Name: "Station B"},
-				}}
-
-			booking := model.Booking{Passenger: passenger, Ticket: ticket, Service: service}
-
-			result := booking.Key()
-
-			expected := "John Doe-T123-A1-S456-ATR-Station A-Station B-10:30"
-			Expect(result).To(Equal(expected))
-		})
-
-		It("returns a key with empty fields if booking details are empty", func() {
-			booking := model.Booking{}
-
-			result := booking.Key()
-
-			expected := "-------0:0"
-			Expect(result).To(Equal(expected))
-		})
+	BeforeEach(func() {
+		booking = model.Booking{
+			ID:        "booking1",
+			Passenger: model.Passenger{Name: "John Doe"},
+			ServiceID: "service1",
+			Seat:      model.Seat{ID: "seat1", ComfortZone: "second-class"},
+			Origin:    "station1",
+			Date:      "2025-04-01",
+		}
 	})
 
-	It("returns the correct key for a valid booking with hour and minute", func() {
-		passenger := model.Passenger{Name: "John Doe"}
-		seat := model.Seat{Code: "A1"}
-		ticket := model.Ticket{Code: "T123", Seat: seat, Buyer: passenger, Class: "First"}
-
-		layout := "15h04"
-		hour, err := time.Parse(layout, "10h30")
+	It("SaveBook saves a booking successfully", func() {
+		err := reservations.SaveBook(booking)
 		Expect(err).To(BeNil())
-		service := model.Service{
-			Code: "S456",
-			Hour: hour,
-			Train: model.Train{
-				Code: "ATR",
-			},
-			Route: model.Route{
-				To: model.Station{Name: "Station A"}, From: model.Station{Name: "Station B"},
-			}}
-
-		booking := model.Booking{Passenger: passenger, Ticket: ticket, Service: service}
-
-		result := booking.Key()
-
-		expected := "John Doe-T123-A1-S456-ATR-Station A-Station B-10:30"
-		Expect(result).To(Equal(expected))
+		Expect(reservations.GetAllBookings()).To(ContainElement(booking))
 	})
 
-	It("returns a key with empty fields if booking details are empty", func() {
-		booking := model.Booking{}
-
-		result := booking.Key()
-
-		expected := "-------0:0"
-		Expect(result).To(Equal(expected))
+	It("SaveBook returns an error if seat is already booked", func() {
+		_ = reservations.SaveBook(booking)
+		err := reservations.SaveBook(booking)
+		Expect(err).To(Equal(errors.New("seat seat1 is already booked")))
 	})
 
-	It("returns a key with missing hour and minute if service hour is not set", func() {
-		passenger := model.Passenger{Name: "John Doe"}
-		seat := model.Seat{Code: "A1"}
-		ticket := model.Ticket{Code: "T123", Seat: seat, Buyer: passenger, Class: "First"}
-		service := model.Service{
-			Code: "S456",
-			Train: model.Train{
-				Code: "ATR",
-			},
-			Route: model.Route{
-				To: model.Station{Name: "Station A"}, From: model.Station{Name: "Station B"},
-			}}
+	It("RemoveBook removes a booking successfully", func() {
+		_ = reservations.SaveBook(booking)
+		err := reservations.RemoveBook(booking)
+		Expect(err).To(BeNil())
+		Expect(reservations.GetAllBookings()).NotTo(ContainElement(booking))
+	})
 
-		booking := model.Booking{Passenger: passenger, Ticket: ticket, Service: service}
+	It("RemoveBook returns an error if booking is not found", func() {
+		err := reservations.RemoveBook(booking)
+		Expect(err).To(Equal(errors.New("booking not found")))
+	})
 
-		result := booking.Key()
+	It("GetBookDetails returns booking details for a passenger", func() {
+		err := reservations.SaveBook(booking)
+		Expect(err).To(BeNil())
+		foundBooking, err := reservations.GetBookDetails(model.Passenger{Name: "John Doe"})
+		Expect(err).To(BeNil())
+		Expect(foundBooking).To(Equal(&booking))
+	})
 
-		expected := "John Doe-T123-A1-S456-ATR-Station A-Station B-0:0"
-		Expect(result).To(Equal(expected))
+	It("GetBookDetails returns an error if booking is not found", func() {
+		_, err := reservations.GetBookDetails(model.Passenger{Name: "Jane Doe"})
+		Expect(err).To(Equal(errors.New("booking not found")))
+	})
+
+	It("GetAllBookings returns all bookings", func() {
+		_ = reservations.SaveBook(booking)
+		bookings := reservations.GetAllBookings()
+		Expect(bookings).To(HaveLen(1))
+		Expect(bookings).To(ContainElement(booking))
 	})
 })

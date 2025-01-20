@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+// info: it will be not used, but it is a good example of how to create a linked list to handle the routes
+
 type NodeRoute struct {
 	Station           Station
 	DistanceInMinutes int
