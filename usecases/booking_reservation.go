@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"errors"
 	"ticket-inventory/model"
 )
 
@@ -10,6 +11,8 @@ type ReservationRepository interface {
 	GetAllBookings() []model.Booking
 	FindSeat(code string, service model.Service) (model.Seat, error)
 	FindBook(bookKey string) (*model.Booking, error)
+	FindPassengerByStation(stationName string) ([]model.Passenger, error)
+	FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
 }
 
 // BookingReservation is a use case for booking reservation
@@ -37,12 +40,17 @@ func (b *BookingReservation) GetAllBookings() []model.Booking {
 	return b.reservationRepo.GetAllBookings()
 }
 
-func (b *BookingReservation) GetPassengersByStation(stationName string) []model.Passenger {
-	//TODO implement me
-	panic("implement me")
+func (b *BookingReservation) GetPassengersByStation(stationName string) ([]model.Passenger, error) {
+	if stationName == "" {
+		return nil, errors.New("station name is required")
+	}
+	return b.reservationRepo.FindPassengerByStation(stationName)
 }
 
-func (b *BookingReservation) GetPassengerBySeat(serviceID, seatID string) *model.Passenger {
-	//TODO implement me
-	panic("implement me")
+func (b *BookingReservation) GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error) {
+	if serviceID == "" || seatID == "" {
+		return nil, errors.New("service ID and seat ID are required")
+	}
+
+	return b.reservationRepo.FindPassengerBySeat(serviceID, seatID)
 }

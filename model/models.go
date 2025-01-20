@@ -39,10 +39,12 @@ func (p Passenger) Validate() (bool, error) {
 }
 
 type Booking struct {
-	ID        string
-	Passenger Passenger
-	ServiceID string
-	Seat      string
+	ID          string
+	Passenger   Passenger
+	ServiceID   string
+	Seat        string
+	Origin      string
+	Destination string
 }
 
 func (b *Booking) Validate() (bool, error) {
@@ -54,6 +56,12 @@ func (b *Booking) Validate() (bool, error) {
 	}
 	if b.Seat == "" {
 		return false, errors.New("seat is required")
+	}
+	if b.Origin == "" {
+		return false, errors.New("origin is required")
+	}
+	if b.Destination == "" {
+		return false, errors.New("destination is required")
 	}
 
 	validate, err := b.Passenger.Validate()

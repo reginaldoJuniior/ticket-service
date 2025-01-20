@@ -87,3 +87,34 @@ func (r *Reservations) FindBook(bookKey string) (*model.Booking, error) {
 	}
 	return nil, errors.New(BookingNotFoundError)
 }
+
+func (r *Reservations) FindPassengerByStation(stationName string) ([]model.Passenger, error) {
+	var passengers []model.Passenger
+
+	bookings, ok := r.data["bookings"].([]model.Booking)
+	if !ok {
+		return passengers, errors.New("no bookings available")
+	}
+
+	for _, booking := range bookings {
+		if booking.Origin == stationName {
+			passengers = append(passengers, booking.Passenger)
+		}
+	}
+
+	if len(passengers) == 0 {
+		return passengers, errors.New("passenger not found")
+	}
+
+	return passengers, nil
+}
+
+func (r *Reservations) FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error) {
+	bookings := r.data["bookings"].([]model.Booking)
+	for _, booking := range bookings {
+		if booking.ServiceID == serviceID && booking.Seat == seatID {
+			return &booking.Passenger, nil
+		}
+	}
+	return nil, errors.New("passenger not found")
+}
