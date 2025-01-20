@@ -20,21 +20,21 @@ var _ = Describe("Reservations", func() {
 			ID:        "booking1",
 			Passenger: model.Passenger{Name: "John Doe"},
 			ServiceID: "service1",
-			Seat:      "seat1",
+			Seat:      model.Seat{ID: "seat1", ComfortZone: "second-class"},
 			Origin:    "station1",
 		}
 	})
 
-	It("FindPassengerByStation returns passengers by station name", func() {
+	It("FindPassengerByOrigin returns passengers by station name", func() {
 		_ = reservations.SaveBook(booking)
-		passengers, err := reservations.FindPassengerByStation("station1")
+		passengers, err := reservations.FindPassengerByOrigin("station1")
 		Expect(err).To(BeNil())
 		Expect(passengers).To(HaveLen(1))
 		Expect(passengers[0].Name).To(Equal("John Doe"))
 	})
 
-	It("FindPassengerByStation returns an error if no passengers found", func() {
-		_, err := reservations.FindPassengerByStation("station2")
+	It("FindPassengerByOrigin returns an error if no passengers found", func() {
+		_, err := reservations.FindPassengerByOrigin("station2")
 		Expect(err).To(Equal(errors.New("passenger not found")))
 	})
 

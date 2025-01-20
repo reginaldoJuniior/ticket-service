@@ -20,7 +20,7 @@ var _ = Describe("Reservations", func() {
 			ID:        "booking1",
 			Passenger: model.Passenger{Name: "John Doe"},
 			ServiceID: "service1",
-			Seat:      "seat1",
+			Seat:      model.Seat{ID: "seat1", ComfortZone: "second-class"},
 		}
 	})
 

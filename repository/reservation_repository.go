@@ -19,8 +19,11 @@ func NewReservationRepository() *Reservations {
 		instance = Reservations{
 			data: map[string]any{
 				"bookings": make([]model.Booking, 0),
+				"routes":   loadDefaultRoutes(),
+				"services": loadDefaultServices(),
 			},
 		}
+
 	})
 	return &instance
 }
@@ -28,6 +31,45 @@ func NewReservationRepository() *Reservations {
 type Reservations struct {
 	mutex sync.Mutex
 	data  map[string]any
+}
+
+func loadDefaultRoutes() []model.Route {
+	routes := make([]model.Route, 0, 2)
+	routes = append(routes,
+		model.Route{
+			ID:    "route1",
+			Stops: []model.Station{{"London"}, {"Ashford"}, {"Calais"}, {"Paris"}},
+		},
+		model.Route{
+			ID:    "route2",
+			Stops: []model.Station{{"Paris"}, {"Brussels"}, {"Rotterdam"}, {"Amsterdam"}},
+		},
+		model.Route{
+			ID:    "route3",
+			Stops: []model.Station{{"Amsterdam"}, {"Utrecht"}, {"Hanover"}, {"Berlin"}},
+		})
+	return routes
+}
+
+func loadDefaultServices() []model.Service {
+	services := make([]model.Service, 0, 3)
+	services = append(services,
+		model.Service{
+			ID:      "service1",
+			RouteID: "route1",
+			Date:    "2025-01-21",
+		},
+		model.Service{
+			ID:      "service2",
+			RouteID: "route2",
+			Date:    "2025-01-22",
+		},
+		model.Service{
+			ID:      "service3",
+			RouteID: "route3",
+			Date:    "2025-01-23",
+		})
+	return services
 }
 
 func (r *Reservations) FindSeat(code string, service model.Service) (model.Seat, error) {
@@ -42,7 +84,7 @@ func (r *Reservations) SaveBook(booking model.Booking) error {
 	bookings := r.data["bookings"].([]model.Booking)
 	for _, b := range bookings {
 		if b.ServiceID == booking.ServiceID && b.Seat == booking.Seat {
-			return fmt.Errorf("seat %s is already booked", booking.Seat)
+			return fmt.Errorf("seat %s is already booked", booking.Seat.ID)
 		}
 	}
 	r.data["bookings"] = append(bookings, booking)
@@ -88,7 +130,7 @@ func (r *Reservations) FindBook(bookKey string) (*model.Booking, error) {
 	return nil, errors.New(BookingNotFoundError)
 }
 
-func (r *Reservations) FindPassengerByStation(stationName string) ([]model.Passenger, error) {
+func (r *Reservations) FindPassengerByOrigin(stationName string) ([]model.Passenger, error) {
 	var passengers []model.Passenger
 
 	bookings, ok := r.data["bookings"].([]model.Booking)
@@ -112,7 +154,7 @@ func (r *Reservations) FindPassengerByStation(stationName string) ([]model.Passe
 func (r *Reservations) FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error) {
 	bookings := r.data["bookings"].([]model.Booking)
 	for _, booking := range bookings {
-		if booking.ServiceID == serviceID && booking.Seat == seatID {
+		if booking.ServiceID == serviceID && booking.Seat.ID == seatID {
 			return &booking.Passenger, nil
 		}
 	}

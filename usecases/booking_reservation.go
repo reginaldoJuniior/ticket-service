@@ -11,7 +11,7 @@ type ReservationRepository interface {
 	GetAllBookings() []model.Booking
 	FindSeat(code string, service model.Service) (model.Seat, error)
 	FindBook(bookKey string) (*model.Booking, error)
-	FindPassengerByStation(stationName string) ([]model.Passenger, error)
+	FindPassengerByOrigin(stationName string) ([]model.Passenger, error)
 	FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
 }
 
@@ -40,11 +40,11 @@ func (b *BookingReservation) GetAllBookings() []model.Booking {
 	return b.reservationRepo.GetAllBookings()
 }
 
-func (b *BookingReservation) GetPassengersByStation(stationName string) ([]model.Passenger, error) {
+func (b *BookingReservation) GetPassengersByOrigin(stationName string) ([]model.Passenger, error) {
 	if stationName == "" {
 		return nil, errors.New("station name is required")
 	}
-	return b.reservationRepo.FindPassengerByStation(stationName)
+	return b.reservationRepo.FindPassengerByOrigin(stationName)
 }
 
 func (b *BookingReservation) GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error) {

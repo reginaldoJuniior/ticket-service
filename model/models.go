@@ -27,6 +27,16 @@ type Seat struct {
 	ComfortZone string // First-class, Second-class
 }
 
+func (s *Seat) Validate() (bool, error) {
+	if s.ID == "" {
+		return false, errors.New("seat ID is required")
+	}
+	if s.ComfortZone == "" {
+		return false, errors.New("comfort zone is required")
+	}
+	return true, nil
+}
+
 type Passenger struct {
 	Name string
 }
@@ -42,7 +52,7 @@ type Booking struct {
 	ID          string
 	Passenger   Passenger
 	ServiceID   string
-	Seat        string
+	Seat        Seat
 	Origin      string
 	Destination string
 }
@@ -54,9 +64,6 @@ func (b *Booking) Validate() (bool, error) {
 	if b.ServiceID == "" {
 		return false, errors.New("service ID is required")
 	}
-	if b.Seat == "" {
-		return false, errors.New("seat is required")
-	}
 	if b.Origin == "" {
 		return false, errors.New("origin is required")
 	}
@@ -65,6 +72,11 @@ func (b *Booking) Validate() (bool, error) {
 	}
 
 	validate, err := b.Passenger.Validate()
+	if err != nil {
+		return false, err
+	}
+
+	validate, err = b.Seat.Validate()
 	if err != nil {
 		return false, err
 	}

@@ -39,7 +39,7 @@ func (m *MockReservationRepository) FindBook(bookKey string) (*model.Booking, er
 	return nil, errors.New("booking not found")
 }
 
-func (m *MockReservationRepository) FindPassengerByStation(stationName string) ([]model.Passenger, error) {
+func (m *MockReservationRepository) FindPassengerByOrigin(stationName string) ([]model.Passenger, error) {
 	var passengers []model.Passenger
 	for _, booking := range m.bookings {
 		if booking.Origin == stationName {
@@ -51,7 +51,7 @@ func (m *MockReservationRepository) FindPassengerByStation(stationName string) (
 
 func (m *MockReservationRepository) FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error) {
 	for _, booking := range m.bookings {
-		if booking.ServiceID == serviceID && booking.Seat == seatID {
+		if booking.ServiceID == serviceID && booking.Seat.ID == seatID {
 			return &booking.Passenger, nil
 		}
 	}
@@ -72,7 +72,7 @@ var _ = Describe("BookingReservation", func() {
 			ID:          "B1",
 			Passenger:   model.Passenger{Name: "John Doe"},
 			ServiceID:   "5160",
-			Seat:        "A11",
+			Seat:        model.Seat{ID: "A11", ComfortZone: "second-class"},
 			Origin:      "Paris",
 			Destination: "London",
 		}
@@ -97,10 +97,10 @@ var _ = Describe("BookingReservation", func() {
 		Expect(bookings).To(ContainElement(booking))
 	})
 
-	It("GetPassengersByStation returns passengers by station ID", func() {
+	It("GetPassengersByOrigin returns passengers by station ID", func() {
 		err := bookingReservation.CreateBooking(booking)
 		Expect(err).To(BeNil())
-		passengers, err := bookingReservation.GetPassengersByStation("Paris")
+		passengers, err := bookingReservation.GetPassengersByOrigin("Paris")
 		Expect(err).To(BeNil())
 		Expect(passengers).To(HaveLen(1))
 		Expect(passengers[0].Name).To(Equal("John Doe"))

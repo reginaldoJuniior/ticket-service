@@ -13,10 +13,13 @@ func main() {
 
 	// Create a booking
 	booking := model.Booking{
-		ID:          "B1",
-		Passenger:   model.Passenger{Name: "John Doe"},
-		ServiceID:   "5160",
-		Seat:        "A11",
+		ID:        "B1",
+		Passenger: model.Passenger{Name: "John Doe"},
+		ServiceID: "5160",
+		Seat: model.Seat{
+			ID:          "A11",
+			ComfortZone: "first-class",
+		},
 		Origin:      "Paris",
 		Destination: "London",
 	}
@@ -36,11 +39,31 @@ func main() {
 	response = client.Get("/5160/passengers")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-	booking = model.Booking{ID: "B1", Passenger: model.Passenger{Name: "John"}, ServiceID: "5160", Seat: "A11", Origin: "London", Destination: "Amsterdam"}
+	// Same seat as before but different service ID
+	// Should be allowed
+	booking = model.Booking{
+		ID: "B1",
+		Passenger: model.Passenger{
+			Name: "Michael",
+		},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "A12", ComfortZone: "second-class"},
+		Origin:      "London",
+		Destination: "Amsterdam",
+	}
 	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-	booking = model.Booking{ID: "B2", Passenger: model.Passenger{Name: "Mary"}, ServiceID: "5160", Seat: "A12", Origin: "Paris", Destination: "Berlin"}
+	booking = model.Booking{
+		ID: "B2",
+		Passenger: model.Passenger{
+			Name: "Mary",
+		},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "A12", ComfortZone: "second-class"},
+		Origin:      "Paris",
+		Destination: "Berlin",
+	}
 	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
@@ -78,7 +101,7 @@ func (r *HTTPResponse) GetBody() any {
 type BookHandle interface {
 	GetAllBookings() []model.Booking
 	CreateBooking(booking model.Booking) error
-	GetPassengersByStation(stationName string) ([]model.Passenger, error)
+	GetPassengersByOrigin(stationName string) ([]model.Passenger, error)
 	GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
 }
 
@@ -120,7 +143,7 @@ func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
 		// URL: /{stationID}/passengers
 		// Retrieve all passengers by station ID
 		stationID := parts[1]
-		passengers, err := client.handle.GetPassengersByStation(stationID)
+		passengers, err := client.handle.GetPassengersByOrigin(stationID)
 		if err != nil {
 			return &HTTPResponse{
 				StatusCode: 400,
