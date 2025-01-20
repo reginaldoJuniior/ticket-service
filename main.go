@@ -29,10 +29,32 @@ func extraQueries(client *http.SimulatedHTTPClient) {
 	fmt.Println("Passengers leaving at Paris:", response.GetBody())
 
 	// 3. How many passengers are in the train between Calais and Paris
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B9",
+		Passenger:   model.Passenger{Name: "Tales"},
+		ServiceID:   "5160",
+		Seat:        model.Seat{ID: "A11", ComfortZone: "second-class"},
+		Origin:      "Calais",
+		Destination: "Paris",
+		Date:        "2025-12-20",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
+
 	response = client.Get("/Calais-Paris/passengers")
 	fmt.Println("Passengers between Calais and Paris:", response.GetBody())
 
 	// 4. Who is sitting on chair A11 in service 5160, on December 20th in Calais
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B9",
+		Passenger:   model.Passenger{Name: "Eve"},
+		ServiceID:   "5160",
+		Seat:        model.Seat{ID: "A11", ComfortZone: "second-class"},
+		Origin:      "Calais",
+		Destination: "Paris",
+		Date:        "2025-12-20",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
+
 	response = client.Get("/5160/A11/2025-12-20/Calais/passenger")
 	fmt.Println("Passenger on chair A11 in service 5160 on December 20th in Calais:", response.GetBody())
 }

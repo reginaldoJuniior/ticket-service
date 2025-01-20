@@ -12,11 +12,11 @@ type ReservationRepository interface {
 	GetAllServices() []model.Service
 	FindServiceByID(serviceID string) (*model.Service, error)
 	GetAllStations() []model.Station
-	FindSeat(code string, service model.Service) (model.Seat, error)
-	FindBook(bookKey string) (*model.Booking, error)
 	FindPassengerByOrigin(stationName string) ([]model.Passenger, error)
 	FindPassengerByDestination(stationName string) ([]model.Passenger, error)
 	FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
+	FindPassengerByServiceSeatDate(serviceID, seatID, date string) (model.Passenger, error)
+	FindPassengerByOriginDestination(origin string, destination string) ([]model.Passenger, error)
 }
 
 // BookingReservation is a use case for booking reservation
@@ -78,4 +78,19 @@ func (b *BookingReservation) GetAllServices() []model.Service {
 
 func (b *BookingReservation) GetAllStations() []model.Station {
 	return b.reservationRepo.GetAllStations()
+}
+
+func (b *BookingReservation) GetPassengerByServiceSeatDate(serviceID string, seatID string, date string) (model.Passenger, error) {
+	if serviceID == "" || seatID == "" || date == "" {
+		return model.Passenger{}, errors.New("service ID, seat ID, and date are required")
+	}
+	return b.reservationRepo.FindPassengerByServiceSeatDate(serviceID, seatID, date)
+}
+
+func (b *BookingReservation) GetPassengersByOriginDestination(origin string, destination string) ([]model.Passenger, error) {
+	if origin == "" || destination == "" {
+		return nil, errors.New("origin and destination are required")
+	}
+
+	return b.reservationRepo.FindPassengerByOriginDestination(origin, destination)
 }

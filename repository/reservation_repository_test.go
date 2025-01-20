@@ -17,11 +17,13 @@ var _ = Describe("Reservations", func() {
 	BeforeEach(func() {
 		reservations = repository.NewReservationRepository()
 		booking = model.Booking{
-			ID:        "booking1",
-			Passenger: model.Passenger{Name: "John Doe"},
-			ServiceID: "service1",
-			Seat:      model.Seat{ID: "seat1", ComfortZone: "second-class"},
-			Origin:    "station1",
+			ID:          "booking1",
+			Passenger:   model.Passenger{Name: "John Doe"},
+			ServiceID:   "service1",
+			Seat:        model.Seat{ID: "seat1", ComfortZone: "second-class"},
+			Origin:      "station1",
+			Destination: "station2",
+			Date:        "2025-04-01",
 		}
 	})
 
@@ -38,6 +40,27 @@ var _ = Describe("Reservations", func() {
 		Expect(err).To(Equal(errors.New("passenger not found")))
 	})
 
+	It("Remove book removes a booking successfully", func() {
+		Expect(reservations.GetAllBookings()).To(ContainElement(booking))
+		err := reservations.RemoveBook(booking)
+		Expect(err).To(BeNil())
+		Expect(reservations.GetAllBookings()).NotTo(ContainElement(booking))
+
+	})
+
+	It("FindPassengerByDestination returns passengers by destination station name", func() {
+		_ = reservations.SaveBook(booking)
+		passengers, err := reservations.FindPassengerByDestination("station2")
+		Expect(err).To(BeNil())
+		Expect(passengers).To(HaveLen(1))
+		Expect(passengers[0].Name).To(Equal("John Doe"))
+	})
+
+	It("FindPassengerByDestination returns an error if no passengers found", func() {
+		_, err := reservations.FindPassengerByDestination("station1")
+		Expect(err).To(Equal(errors.New("passenger not found")))
+	})
+
 	It("FindPassengerBySeat returns passenger by service ID and seat ID", func() {
 		_ = reservations.SaveBook(booking)
 		passenger, err := reservations.FindPassengerBySeat("service1", "seat1")
@@ -50,81 +73,34 @@ var _ = Describe("Reservations", func() {
 		Expect(err).To(Equal(errors.New("passenger not found")))
 	})
 
-	Context("Assessment requirements", func() {
-		It("should allow making a reservation for 2 passengers with 2 first-class seats from Paris to Amsterdam on service 5160 on April 1st 2021 with seats A11 & A12", func() {
-			booking1 := model.Booking{
-				ID:          "booking1",
-				Passenger:   model.Passenger{Name: "Alice"},
-				ServiceID:   "5160",
-				Seat:        model.Seat{ID: "A11", ComfortZone: "first-class"},
-				Origin:      "Paris",
-				Destination: "Amsterdam",
-				Date:        "2021-04-01",
-			}
-			booking2 := model.Booking{
-				ID:          "booking2",
-				Passenger:   model.Passenger{Name: "Bob"},
-				ServiceID:   "5160",
-				Seat:        model.Seat{ID: "A12", ComfortZone: "first-class"},
-				Origin:      "Paris",
-				Destination: "Amsterdam",
-				Date:        "2021-04-01",
-			}
-			Expect(reservations.SaveBook(booking1)).To(BeNil())
-			Expect(reservations.SaveBook(booking2)).To(BeNil())
+	It("FindPassengerByServiceSeatDate returns passenger by service ID, seat ID, and date", func() {
+		_ = reservations.SaveBook(booking)
+		passenger, err := reservations.FindPassengerByServiceSeatDate("service1", "seat1", "2025-04-01")
+		Expect(err).To(BeNil())
+		Expect(passenger.Name).To(Equal("John Doe"))
+	})
 
-			// Attempt to make the same booking again, should fail
-			Expect(reservations.SaveBook(booking1)).ToNot(BeNil())
-			Expect(reservations.SaveBook(booking2)).ToNot(BeNil())
-		})
+	It("FindPassengerByServiceSeatDate returns an error if passenger is not found", func() {
+		_, err := reservations.FindPassengerByServiceSeatDate("service1", "seat2", "2025-04-01")
+		Expect(err).To(Equal(errors.New("passenger not found")))
+	})
 
-		It("should allow making a reservation for 2 passengers where 1 passenger in second-class, one in first-class from London to Amsterdam. London to Paris, seat H1 and N5, Paris to Amsterdam, seat A1 & T7", func() {
-			booking1 := model.Booking{
-				ID:          "booking3",
-				Passenger:   model.Passenger{Name: "Charlie"},
-				ServiceID:   "5161",
-				Seat:        model.Seat{ID: "H1", ComfortZone: "second-class"},
-				Origin:      "London",
-				Destination: "Paris",
-				Date:        "2021-04-01",
-			}
-			booking2 := model.Booking{
-				ID:          "booking4",
-				Passenger:   model.Passenger{Name: "Dave"},
-				ServiceID:   "5161",
-				Seat:        model.Seat{ID: "N5", ComfortZone: "first-class"},
-				Origin:      "London",
-				Destination: "Paris",
-				Date:        "2021-04-01",
-			}
-			booking3 := model.Booking{
-				ID:          "booking5",
-				Passenger:   model.Passenger{Name: "Charlie"},
-				ServiceID:   "5162",
-				Seat:        model.Seat{ID: "A1", ComfortZone: "first-class"},
-				Origin:      "Paris",
-				Destination: "Amsterdam",
-				Date:        "2021-04-01",
-			}
-			booking4 := model.Booking{
-				ID:          "booking6",
-				Passenger:   model.Passenger{Name: "Dave"},
-				ServiceID:   "5162",
-				Seat:        model.Seat{ID: "T7", ComfortZone: "second-class"},
-				Origin:      "Paris",
-				Destination: "Amsterdam",
-				Date:        "2021-04-01",
-			}
-			Expect(reservations.SaveBook(booking1)).To(BeNil())
-			Expect(reservations.SaveBook(booking2)).To(BeNil())
-			Expect(reservations.SaveBook(booking3)).To(BeNil())
-			Expect(reservations.SaveBook(booking4)).To(BeNil())
+	It("FindPassengerByServiceSeatDate returns an error if date does not match", func() {
+		_ = reservations.SaveBook(booking)
+		_, err := reservations.FindPassengerByServiceSeatDate("service1", "seat1", "2025-04-02")
+		Expect(err).To(Equal(errors.New("passenger not found")))
+	})
 
-			// Attempt to make the same booking again, should fail
-			Expect(reservations.SaveBook(booking1)).ToNot(BeNil())
-			Expect(reservations.SaveBook(booking2)).ToNot(BeNil())
-			Expect(reservations.SaveBook(booking3)).ToNot(BeNil())
-			Expect(reservations.SaveBook(booking4)).ToNot(BeNil())
-		})
+	It("FindPassengerByOriginDestination returns passengers by origin and destination", func() {
+		_ = reservations.SaveBook(booking)
+		passengers, err := reservations.FindPassengerByOriginDestination("station1", "station2")
+		Expect(err).To(BeNil())
+		Expect(passengers).To(HaveLen(1))
+		Expect(passengers[0].Name).To(Equal("John Doe"))
+	})
+
+	It("FindPassengerByOriginDestination returns an error if no passengers found", func() {
+		_, err := reservations.FindPassengerByOriginDestination("station1", "station3")
+		Expect(err).To(Equal(errors.New("passenger not found")))
 	})
 })

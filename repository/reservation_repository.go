@@ -69,11 +69,6 @@ func loadDefaultServices() []model.Service {
 	return services
 }
 
-func (r *Reservations) FindSeat(code string, service model.Service) (model.Seat, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (r *Reservations) SaveBook(booking model.Booking) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
@@ -115,16 +110,6 @@ func (r *Reservations) GetAllBookings() []model.Booking {
 		list = append(list, v)
 	}
 	return list
-}
-
-func (r *Reservations) FindBook(bookKey string) (*model.Booking, error) {
-	bookings := r.data["bookings"].([]model.Booking)
-	for _, b := range bookings {
-		if b.ID == bookKey {
-			return &b, nil
-		}
-	}
-	return nil, errors.New(BookingNotFoundError)
 }
 
 func (r *Reservations) FindPassengerByOrigin(stationName string) ([]model.Passenger, error) {
@@ -205,4 +190,35 @@ func (r *Reservations) FindServiceByID(serviceID string) (*model.Service, error)
 		}
 	}
 	return nil, errors.New("service not found")
+}
+
+func (r *Reservations) FindPassengerByServiceSeatDate(serviceID, seatID, date string) (model.Passenger, error) {
+	bookings := r.data["bookings"].([]model.Booking)
+	for _, booking := range bookings {
+		if booking.ServiceID == serviceID && booking.Seat.ID == seatID && booking.Date == date {
+			return booking.Passenger, nil
+		}
+	}
+	return model.Passenger{}, errors.New("passenger not found")
+}
+
+func (r *Reservations) FindPassengerByOriginDestination(origin, destination string) ([]model.Passenger, error) {
+	var passengers []model.Passenger
+
+	bookings, ok := r.data["bookings"].([]model.Booking)
+	if !ok {
+		return passengers, errors.New("no bookings available")
+	}
+
+	for _, booking := range bookings {
+		if booking.Origin == origin && booking.Destination == destination {
+			passengers = append(passengers, booking.Passenger)
+		}
+	}
+
+	if len(passengers) == 0 {
+		return passengers, errors.New("passenger not found")
+	}
+
+	return passengers, nil
 }

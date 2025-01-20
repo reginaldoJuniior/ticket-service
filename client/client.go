@@ -70,6 +70,26 @@ func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
 			return &HTTPResponse{StatusCode: 200, Body: passenger}
 		}
 		return &HTTPResponse{StatusCode: 404, Body: "Passenger not found"}
+	case len(parts) == 6 && parts[5] == "passenger":
+		serviceID := parts[1]
+		seatID := parts[2]
+		date := parts[3]
+		passenger, err := client.handle.GetPassengerByServiceSeatDate(serviceID, seatID, date)
+		if err != nil {
+			return &HTTPResponse{StatusCode: 400, Body: err.Error()}
+		}
+		return &HTTPResponse{StatusCode: 200, Body: passenger}
+	case len(parts) == 3 && parts[2] == "passenger":
+		origin := strings.Split(parts[1], "-")[0]
+		destination := strings.Split(parts[1], "-")[1]
+		passengers, err := client.handle.GetPassengersByOriginDestination(origin, destination)
+		if err != nil {
+			return &HTTPResponse{StatusCode: 400, Body: err.Error()}
+		}
+		return &HTTPResponse{StatusCode: 200, Body: map[string]any{
+			"numberOfPassengers": len(passengers),
+			"passengers":         passengers,
+		}}
 	default:
 		return &HTTPResponse{StatusCode: 404, Body: "Route not found"}
 	}

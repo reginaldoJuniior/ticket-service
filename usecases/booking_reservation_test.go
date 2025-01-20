@@ -26,10 +26,6 @@ func (m *MockReservationRepository) GetAllBookings() []model.Booking {
 	return m.bookings
 }
 
-func (m *MockReservationRepository) FindSeat(code string, service model.Service) (model.Seat, error) {
-	return model.Seat{}, nil
-}
-
 func (m *MockReservationRepository) FindBook(bookKey string) (*model.Booking, error) {
 	for _, b := range m.bookings {
 		if b.ID == bookKey {
@@ -78,6 +74,26 @@ func (m *MockReservationRepository) GetAllStations() []model.Station {
 
 func (m *MockReservationRepository) FindServiceByID(serviceID string) (*model.Service, error) {
 	return &model.Service{ID: serviceID}, nil
+}
+
+func (m *MockReservationRepository) FindPassengerByServiceSeatDate(serviceID, seatID, date string) (model.Passenger, error) {
+	return model.Passenger{}, nil
+}
+
+func (m *MockReservationRepository) FindPassengerByOriginDestination(origin string, destination string) ([]model.Passenger, error) {
+	list := make([]model.Passenger, 0)
+	for _, booking := range m.bookings {
+		if booking.Origin == origin && booking.Destination == destination {
+			list = append(list, booking.Passenger)
+		}
+	}
+
+	if len(list) == 0 {
+		return nil, errors.New("passenger not found")
+	}
+
+	return list, nil
+
 }
 
 var _ = Describe("BookingReservation", func() {
@@ -147,6 +163,19 @@ var _ = Describe("BookingReservation", func() {
 
 	It("GetPassengerBySeat returns an error if passenger is not found", func() {
 		_, err := bookingReservation.GetPassengerBySeat("5160", "A12")
+		Expect(err).To(Equal(errors.New("passenger not found")))
+	})
+
+	It("GetPassengersByOriginDestination returns passengers by origin and destination", func() {
+		_ = bookingReservation.CreateBooking(booking)
+		passengers, err := bookingReservation.GetPassengersByOriginDestination("Paris", "London")
+		Expect(err).To(BeNil())
+		Expect(passengers).To(HaveLen(1))
+		Expect(passengers[0].Name).To(Equal("John Doe"))
+	})
+
+	It("GetPassengersByOriginDestination returns an error if no passengers found", func() {
+		_, err := bookingReservation.GetPassengersByOriginDestination("Paris", "Berlin")
 		Expect(err).To(Equal(errors.New("passenger not found")))
 	})
 })

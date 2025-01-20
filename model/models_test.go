@@ -69,17 +69,4 @@ var _ = Describe("Reservations", func() {
 		Expect(bookings).To(HaveLen(1))
 		Expect(bookings).To(ContainElement(booking))
 	})
-
-	It("FindBook returns a booking if found", func() {
-		//err := reservations.SaveBook(booking)
-		//Expect(err).To(BeNil())
-		foundBooking, err := reservations.FindBook("booking1")
-		Expect(err).To(BeNil())
-		Expect(foundBooking).To(Equal(&booking))
-	})
-
-	It("FindBook returns an error if booking is not found", func() {
-		_, err := reservations.FindBook("booking2")
-		Expect(err).To(Equal(errors.New("booking not found")))
-	})
 })

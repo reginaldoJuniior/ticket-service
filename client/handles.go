@@ -23,4 +23,6 @@ type BookHandle interface {
 	GetPassengersByOrigin(stationName string) ([]model.Passenger, error)
 	GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
 	GetPassengersByDestination(stationName string) ([]model.Passenger, error)
+	GetPassengerByServiceSeatDate(serviceID string, seatID string, date string) (model.Passenger, error)
+	GetPassengersByOriginDestination(origin string, destination string) ([]model.Passenger, error)
 }
