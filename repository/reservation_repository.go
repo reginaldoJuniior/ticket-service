@@ -26,10 +26,8 @@ func NewReservationRepository() *Reservations {
 }
 
 type Reservations struct {
-	Bookings      map[string]model.Booking
-	ReservedSeats map[string]struct{}
-	mutex         sync.Mutex
-	data          map[string]any
+	mutex sync.Mutex
+	data  map[string]any
 }
 
 func (r *Reservations) FindSeat(code string, service model.Service) (model.Seat, error) {
@@ -51,8 +49,20 @@ func (r *Reservations) SaveBook(booking model.Booking) error {
 	return nil
 }
 
+func (r *Reservations) RemoveBook(booking model.Booking) error {
+	bookings := r.data["bookings"].([]model.Booking)
+	for i, b := range bookings {
+		if b.ServiceID == booking.ServiceID && b.Seat == booking.Seat {
+			r.data["bookings"] = append(bookings[:i], bookings[i+1:]...)
+			return nil
+		}
+	}
+	return errors.New("booking not found")
+}
+
 func (r *Reservations) GetBookDetails(passenger model.Passenger) (*model.Booking, error) {
-	for _, b := range r.Bookings {
+	bookings := r.data["bookings"].([]model.Booking)
+	for _, b := range bookings {
 		if b.Passenger.Name == passenger.Name {
 			return &b, nil
 		}
@@ -69,9 +79,11 @@ func (r *Reservations) GetAllBookings() []model.Booking {
 }
 
 func (r *Reservations) FindBook(bookKey string) (*model.Booking, error) {
-	if _, ok := r.Bookings[bookKey]; !ok {
-		return nil, errors.New(BookingNotFoundError)
+	bookings := r.data["bookings"].([]model.Booking)
+	for _, b := range bookings {
+		if b.ID == bookKey {
+			return &b, nil
+		}
 	}
-	book, _ := r.Bookings[bookKey]
-	return &book, nil
+	return nil, errors.New(BookingNotFoundError)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"ticket-inventory/model"
 	"ticket-inventory/repository"
 	"ticket-inventory/usecases"
@@ -22,6 +23,9 @@ func main() {
 
 	// Try booking the same seat again
 	response = client.Post("/bookings", booking)
+	fmt.Println(response.GetStatusCode(), response.GetBody())
+
+	response = client.Get("/bookings")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 }
 
@@ -54,6 +58,8 @@ func (r *HTTPResponse) GetBody() any {
 type BookHandle interface {
 	GetAllBookings() []model.Booking
 	CreateBooking(booking model.Booking) error
+	GetPassengersByStation(stationName string) []model.Passenger
+	GetPassengerBySeat(serviceID, seatID string) *model.Passenger
 }
 
 // SimulatedHTTPClient implements the HTTPClient interface
@@ -82,11 +88,22 @@ func (client *SimulatedHTTPClient) Post(url string, body any) *HTTPResponse {
 }
 
 func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
+	// extract station name from URL
+	var parameter string
+	if len(strings.Split(url, "/")) > 2 {
+		parameter = strings.Split(url, "/")[1]
+		url = strings.Split(url, "/")[2]
+	}
+
 	switch url {
 	case "/bookings":
 		// Retrieve all bookings
 		bookings := client.handle.GetAllBookings()
 		return &HTTPResponse{StatusCode: 200, Body: bookings}
+	case "/station/passengers":
+		// Retrieve all passengers
+		passengers := client.handle.GetPassengersByStation(parameter)
+		return &HTTPResponse{StatusCode: 200, Body: passengers}
 	default:
 		return &HTTPResponse{StatusCode: 404, Body: "Route not found"}
 	}

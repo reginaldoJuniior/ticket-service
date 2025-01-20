@@ -1,4 +1,4 @@
-package model_test
+package repository_test
 
 import (
 	"errors"
@@ -11,11 +11,22 @@ import (
 var _ = Describe("Reservations", func() {
 	var (
 		reservations *repository.Reservations
-		booking      model.Booking
+		//service      model.Service
+		//seat         model.Seat
+		booking model.Booking
 	)
 
 	BeforeEach(func() {
 		reservations = repository.NewReservationRepository()
+		//service = model.Service{
+		//	ID:      "service1",
+		//	RouteID: "route1",
+		//	Date:    "2023-10-10",
+		//}
+		//seat = model.Seat{
+		//	ID:          "seat1",
+		//	ComfortZone: "First-class",
+		//}
 		booking = model.Booking{
 			ID:        "booking1",
 			Passenger: model.Passenger{Name: "John Doe"},
@@ -23,6 +34,21 @@ var _ = Describe("Reservations", func() {
 			Seat:      "seat1",
 		}
 	})
+
+	//It("FindSeat returns the seat if found in FirstClassSeats", func() {
+	//	service.Train.Carriage = []model.Carriage{
+	//		{ID: "carriage1", Seats: []model.Seat{seat}},
+	//	}
+	//	foundSeat, err := reservations.FindSeat("seat1", service)
+	//	Expect(err).To(BeNil())
+	//	Expect(foundSeat).To(Equal(seat))
+	//})
+	//
+	//It("FindSeat returns an error if seat is not found", func() {
+	//	service.Train.Carriage = []model.Carriage{}
+	//	_, err := reservations.FindSeat("seat1", service)
+	//	Expect(err).To(Equal(errors.New("seat not found")))
+	//})
 
 	It("SaveBook saves a booking successfully", func() {
 		err := reservations.SaveBook(booking)
@@ -69,8 +95,6 @@ var _ = Describe("Reservations", func() {
 	})
 
 	It("FindBook returns a booking if found", func() {
-		//err := reservations.SaveBook(booking)
-		//Expect(err).To(BeNil())
 		foundBooking, err := reservations.FindBook("booking1")
 		Expect(err).To(BeNil())
 		Expect(foundBooking).To(Equal(&booking))
