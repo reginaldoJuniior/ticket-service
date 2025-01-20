@@ -45,9 +45,16 @@ func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
 	case len(parts) == 2 && parts[1] == "stations":
 		stations := client.handle.GetAllStations()
 		return &HTTPResponse{StatusCode: 200, Body: stations}
-	case len(parts) == 3 && parts[2] == "passengers":
+	case len(parts) == 3 && parts[2] == "boarding":
 		stationID := parts[1]
 		passengers, err := client.handle.GetPassengersByOrigin(stationID)
+		if err != nil {
+			return &HTTPResponse{StatusCode: 400, Body: err.Error()}
+		}
+		return &HTTPResponse{StatusCode: 200, Body: passengers}
+	case len(parts) == 3 && parts[2] == "leaving":
+		stationID := parts[1]
+		passengers, err := client.handle.GetPassengersByDestination(stationID)
 		if err != nil {
 			return &HTTPResponse{StatusCode: 400, Body: err.Error()}
 		}

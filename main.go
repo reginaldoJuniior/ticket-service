@@ -14,6 +14,27 @@ func main() {
 
 	// Assessment requirements
 	assessmentRequests(client)
+
+	// Extra queries
+	extraQueries(client)
+}
+
+func extraQueries(client *http.SimulatedHTTPClient) {
+	// 1. How many passengers are boarding at station London
+	response := client.Get("/London/boarding")
+	fmt.Println("Passengers boarding at London:", response.GetBody())
+
+	// 2. How many passengers are leaving at station Paris
+	response = client.Get("/Paris/leaving")
+	fmt.Println("Passengers leaving at Paris:", response.GetBody())
+
+	// 3. How many passengers are in the train between Calais and Paris
+	response = client.Get("/Calais-Paris/passengers")
+	fmt.Println("Passengers between Calais and Paris:", response.GetBody())
+
+	// 4. Who is sitting on chair A11 in service 5160, on December 20th in Calais
+	response = client.Get("/5160/A11/2025-12-20/Calais/passenger")
+	fmt.Println("Passenger on chair A11 in service 5160 on December 20th in Calais:", response.GetBody())
 }
 
 func myTestRequests(client *http.SimulatedHTTPClient) {
@@ -49,7 +70,7 @@ func myTestRequests(client *http.SimulatedHTTPClient) {
 	response = client.Get("/5160/A11/passengers")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-	response = client.Get("/5160/passengers")
+	response = client.Get("/5160/boarding")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
 	// Same seat as before but different service ID

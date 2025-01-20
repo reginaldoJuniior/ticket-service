@@ -22,4 +22,5 @@ type BookHandle interface {
 	CreateBooking(booking model.Booking) error
 	GetPassengersByOrigin(stationName string) ([]model.Passenger, error)
 	GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
+	GetPassengersByDestination(stationName string) ([]model.Passenger, error)
 }
