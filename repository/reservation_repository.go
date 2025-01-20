@@ -55,15 +55,15 @@ func loadDefaultServices() []model.Service {
 	services := make([]model.Service, 0, 3)
 	services = append(services,
 		model.Service{
-			ID:      "service1",
+			ID:      "5160",
 			RouteID: "route1",
 		},
 		model.Service{
-			ID:      "service2",
+			ID:      "5161",
 			RouteID: "route2",
 		},
 		model.Service{
-			ID:      "service3",
+			ID:      "5163",
 			RouteID: "route3",
 		})
 	return services

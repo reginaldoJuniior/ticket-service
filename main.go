@@ -2,15 +2,21 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	http "ticket-inventory/client"
 	"ticket-inventory/model"
-	"ticket-inventory/repository"
-	"ticket-inventory/usecases"
 )
 
 func main() {
-	client := NewSimulatedHTTPClient() // Initialize empty bookings list
+	client := http.NewSimulatedHTTPClient() // Initialize empty bookings list
 
+	// My tests
+	myTestRequests(client)
+
+	// Assessment requirements
+	assessmentRequests(client)
+}
+
+func myTestRequests(client *http.SimulatedHTTPClient) {
 	response := client.Get("/services")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
@@ -28,6 +34,7 @@ func main() {
 		},
 		Origin:      "Paris",
 		Destination: "London",
+		Date:        "2025-10-01",
 	}
 	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -56,6 +63,7 @@ func main() {
 		Seat:        model.Seat{ID: "A12", ComfortZone: "second-class"},
 		Origin:      "London",
 		Destination: "Amsterdam",
+		Date:        "2025-10-01",
 	}
 	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -69,6 +77,7 @@ func main() {
 		Seat:        model.Seat{ID: "A12", ComfortZone: "second-class"},
 		Origin:      "Paris",
 		Destination: "Berlin",
+		Date:        "2025-10-01",
 	}
 	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -78,117 +87,138 @@ func main() {
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 }
 
-// Response interface simulates an HTTP response
-type Response interface {
-	GetStatusCode() int
-	GetBody() any
-}
+func assessmentRequests(client *http.SimulatedHTTPClient) {
+	response := client.Post("/bookings", model.Booking{
+		ID:          "B3",
+		Passenger:   model.Passenger{Name: "Alice"},
+		ServiceID:   "5160",
+		Seat:        model.Seat{ID: "A11", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-// HTTPClient interface simulates REST-like client methods
-type HTTPClient interface {
-	Post(url string, body any) Response
-	Get(url string) Response
-}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B4",
+		Passenger:   model.Passenger{Name: "Bob"},
+		ServiceID:   "5160",
+		Seat:        model.Seat{ID: "A12", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-// HTTPResponse implements the Response interface
-type HTTPResponse struct {
-	StatusCode int
-	Body       any
-}
+	// Attempt to book the same seats again
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B3",
+		Passenger:   model.Passenger{Name: "Alice"},
+		ServiceID:   "5160",
+		Seat:        model.Seat{ID: "A11", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-func (r *HTTPResponse) GetStatusCode() int {
-	return r.StatusCode
-}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B4",
+		Passenger:   model.Passenger{Name: "Bob"},
+		ServiceID:   "5160",
+		Seat:        model.Seat{ID: "A12", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-func (r *HTTPResponse) GetBody() any {
-	return r.Body
-}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B5",
+		Passenger:   model.Passenger{Name: "Charlie"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "H1", ComfortZone: "second-class"},
+		Origin:      "London",
+		Destination: "Paris",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-type BookHandle interface {
-	GetAllBookings() []model.Booking
-	GetAllServices() []model.Service
-	GetAllStations() []model.Station
-	CreateBooking(booking model.Booking) error
-	GetPassengersByOrigin(stationName string) ([]model.Passenger, error)
-	GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
-}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B6",
+		Passenger:   model.Passenger{Name: "Dave"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "N5", ComfortZone: "second-class"},
+		Origin:      "London",
+		Destination: "Paris",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-// SimulatedHTTPClient implements the HTTPClient interface
-type SimulatedHTTPClient struct {
-	handle BookHandle
-}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B7",
+		Passenger:   model.Passenger{Name: "Charlie"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "A1", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-func NewSimulatedHTTPClient() *SimulatedHTTPClient {
-	return &SimulatedHTTPClient{
-		handle: usecases.NewBookingReservation(
-			repository.NewReservationRepository(),
-		),
-	}
-}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B8",
+		Passenger:   model.Passenger{Name: "Dave"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "T7", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-func (client *SimulatedHTTPClient) Post(url string, body any) *HTTPResponse {
-	switch url {
-	case "/bookings":
-		// Process booking creation
-		booking := body.(model.Booking)
-		if err := client.handle.CreateBooking(booking); err != nil {
-			return &HTTPResponse{StatusCode: 400, Body: err.Error()}
-		}
-		return &HTTPResponse{StatusCode: 201, Body: "Booking created successfully"}
-	default:
-		return &HTTPResponse{StatusCode: 404, Body: "Route not found"}
-	}
-}
+	// Attempt to book the same seats again
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B5",
+		Passenger:   model.Passenger{Name: "Charlie"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "H1", ComfortZone: "second-class"},
+		Origin:      "London",
+		Destination: "Paris",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
-	parts := strings.Split(url, "/")
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B6",
+		Passenger:   model.Passenger{Name: "Dave"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "N5", ComfortZone: "second-class"},
+		Origin:      "London",
+		Destination: "Paris",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-	switch {
-	case len(parts) == 2 && parts[1] == "bookings":
-		// URL: /bookings
-		// Retrieve all bookings
-		bookings := client.handle.GetAllBookings()
-		return &HTTPResponse{StatusCode: 200, Body: bookings}
-	case len(parts) == 2 && parts[1] == "services":
-		// URL: /services
-		// Retrieve all services
-		services := client.handle.GetAllServices()
-		return &HTTPResponse{StatusCode: 200, Body: services}
-	case len(parts) == 2 && parts[1] == "stations":
-		// URL: /stations
-		// Retrieve all stations
-		stations := client.handle.GetAllStations()
-		return &HTTPResponse{StatusCode: 200, Body: stations}
-	case len(parts) == 3 && parts[2] == "passengers":
-		// URL: /{stationID}/passengers
-		// Retrieve all passengers by station ID
-		stationID := parts[1]
-		passengers, err := client.handle.GetPassengersByOrigin(stationID)
-		if err != nil {
-			return &HTTPResponse{
-				StatusCode: 400,
-				Body:       err.Error(),
-			}
-		}
-		return &HTTPResponse{StatusCode: 200, Body: passengers}
-	case len(parts) == 4 && parts[3] == "passengers":
-		// URL: /{serviceID}/{seatID}/passengers
-		// Retrieve passenger by service ID and seat ID
-		serviceID := parts[1]
-		seatID := parts[2]
-		passenger, err := client.handle.GetPassengerBySeat(serviceID, seatID)
-		if err != nil {
-			return &HTTPResponse{
-				StatusCode: 400,
-				Body:       err.Error(),
-			}
-		}
-		if passenger != nil {
-			return &HTTPResponse{StatusCode: 200, Body: passenger}
-		}
-		return &HTTPResponse{StatusCode: 404, Body: "Passenger not found"}
-	default:
-		// URL not found
-		return &HTTPResponse{StatusCode: 404, Body: "Route not found"}
-	}
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B7",
+		Passenger:   model.Passenger{Name: "Charlie"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "A1", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
+
+	response = client.Post("/bookings", model.Booking{
+		ID:          "B8",
+		Passenger:   model.Passenger{Name: "Dave"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "T7", ComfortZone: "first-class"},
+		Origin:      "Paris",
+		Destination: "Amsterdam",
+		Date:        "2021-04-01",
+	})
+	fmt.Println(response.GetStatusCode(), response.GetBody())
 }

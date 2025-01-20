@@ -13,9 +13,9 @@ var _ = Describe("Reservations", func() {
 		reservations *repository.Reservations
 		booking      model.Booking
 	)
+	reservations = repository.NewReservationRepository()
 
 	BeforeEach(func() {
-		reservations = repository.NewReservationRepository()
 		booking = model.Booking{
 			ID:        "booking1",
 			Passenger: model.Passenger{Name: "John Doe"},
