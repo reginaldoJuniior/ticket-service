@@ -58,6 +58,18 @@ func (m *MockReservationRepository) FindPassengerBySeat(serviceID, seatID string
 	return nil, errors.New("passenger not found")
 }
 
+func (m *MockReservationRepository) GetAllServices() []model.Service {
+	return nil
+}
+
+func (m *MockReservationRepository) GetAllStations() []model.Station {
+	return nil
+}
+
+func (m *MockReservationRepository) FindServiceByID(serviceID string) (*model.Service, error) {
+	return &model.Service{ID: serviceID}, nil
+}
+
 var _ = Describe("BookingReservation", func() {
 	var (
 		bookingReservation *usecases.BookingReservation

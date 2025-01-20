@@ -9,6 +9,9 @@ import (
 type ReservationRepository interface {
 	SaveBook(book model.Booking) error
 	GetAllBookings() []model.Booking
+	GetAllServices() []model.Service
+	FindServiceByID(serviceID string) (*model.Service, error)
+	GetAllStations() []model.Station
 	FindSeat(code string, service model.Service) (model.Seat, error)
 	FindBook(bookKey string) (*model.Booking, error)
 	FindPassengerByOrigin(stationName string) ([]model.Passenger, error)
@@ -27,12 +30,18 @@ func NewBookingReservation(reservationRepo ReservationRepository) *BookingReserv
 }
 
 // CreateBooking simulates a booking creation
-// Helper methods for booking management
 func (b *BookingReservation) CreateBooking(booking model.Booking) error {
 	ok, err := booking.Validate()
 	if !ok {
 		return err
 	}
+
+	// Check if service exists
+	_, err = b.reservationRepo.FindServiceByID(booking.ServiceID)
+	if err != nil {
+		return err
+	}
+
 	return b.reservationRepo.SaveBook(booking)
 }
 
@@ -53,4 +62,12 @@ func (b *BookingReservation) GetPassengerBySeat(serviceID, seatID string) (*mode
 	}
 
 	return b.reservationRepo.FindPassengerBySeat(serviceID, seatID)
+}
+
+func (b *BookingReservation) GetAllServices() []model.Service {
+	return b.reservationRepo.GetAllServices()
+}
+
+func (b *BookingReservation) GetAllStations() []model.Station {
+	return b.reservationRepo.GetAllStations()
 }

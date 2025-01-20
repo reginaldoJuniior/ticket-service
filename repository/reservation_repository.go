@@ -160,3 +160,31 @@ func (r *Reservations) FindPassengerBySeat(serviceID, seatID string) (*model.Pas
 	}
 	return nil, errors.New("passenger not found")
 }
+
+func (r *Reservations) GetAllServices() []model.Service {
+	list := make([]model.Service, 0, len(r.data["services"].([]model.Service)))
+	for _, v := range r.data["services"].([]model.Service) {
+		list = append(list, v)
+	}
+	return list
+}
+
+func (r *Reservations) GetAllStations() []model.Station {
+	list := make([]model.Station, 0, len(r.data["routes"].([]model.Route)))
+	for _, route := range r.data["routes"].([]model.Route) {
+		for _, station := range route.Stops {
+			list = append(list, station)
+		}
+	}
+	return list
+}
+
+func (r *Reservations) FindServiceByID(serviceID string) (*model.Service, error) {
+	services := r.data["services"].([]model.Service)
+	for _, service := range services {
+		if service.ID == serviceID {
+			return &service, nil
+		}
+	}
+	return nil, errors.New("service not found")
+}

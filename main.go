@@ -11,6 +11,12 @@ import (
 func main() {
 	client := NewSimulatedHTTPClient() // Initialize empty bookings list
 
+	response := client.Get("/services")
+	fmt.Println(response.GetStatusCode(), response.GetBody())
+
+	response = client.Get("/stations")
+	fmt.Println(response.GetStatusCode(), response.GetBody())
+
 	// Create a booking
 	booking := model.Booking{
 		ID:        "B1",
@@ -23,7 +29,7 @@ func main() {
 		Origin:      "Paris",
 		Destination: "London",
 	}
-	response := client.Post("/bookings", booking)
+	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
 	// Try booking the same seat again
@@ -100,6 +106,8 @@ func (r *HTTPResponse) GetBody() any {
 
 type BookHandle interface {
 	GetAllBookings() []model.Booking
+	GetAllServices() []model.Service
+	GetAllStations() []model.Station
 	CreateBooking(booking model.Booking) error
 	GetPassengersByOrigin(stationName string) ([]model.Passenger, error)
 	GetPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
@@ -112,7 +120,9 @@ type SimulatedHTTPClient struct {
 
 func NewSimulatedHTTPClient() *SimulatedHTTPClient {
 	return &SimulatedHTTPClient{
-		handle: usecases.NewBookingReservation(repository.NewReservationRepository()),
+		handle: usecases.NewBookingReservation(
+			repository.NewReservationRepository(),
+		),
 	}
 }
 
@@ -139,6 +149,16 @@ func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
 		// Retrieve all bookings
 		bookings := client.handle.GetAllBookings()
 		return &HTTPResponse{StatusCode: 200, Body: bookings}
+	case len(parts) == 2 && parts[1] == "services":
+		// URL: /services
+		// Retrieve all services
+		services := client.handle.GetAllServices()
+		return &HTTPResponse{StatusCode: 200, Body: services}
+	case len(parts) == 2 && parts[1] == "stations":
+		// URL: /stations
+		// Retrieve all stations
+		stations := client.handle.GetAllStations()
+		return &HTTPResponse{StatusCode: 200, Body: stations}
 	case len(parts) == 3 && parts[2] == "passengers":
 		// URL: /{stationID}/passengers
 		// Retrieve all passengers by station ID
