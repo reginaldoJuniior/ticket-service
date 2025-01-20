@@ -57,17 +57,14 @@ func loadDefaultServices() []model.Service {
 		model.Service{
 			ID:      "service1",
 			RouteID: "route1",
-			Date:    "2025-01-21",
 		},
 		model.Service{
 			ID:      "service2",
 			RouteID: "route2",
-			Date:    "2025-01-22",
 		},
 		model.Service{
 			ID:      "service3",
 			RouteID: "route3",
-			Date:    "2025-01-23",
 		})
 	return services
 }

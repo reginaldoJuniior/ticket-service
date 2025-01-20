@@ -21,6 +21,8 @@ var _ = Describe("Reservations", func() {
 			Passenger: model.Passenger{Name: "John Doe"},
 			ServiceID: "service1",
 			Seat:      model.Seat{ID: "seat1", ComfortZone: "second-class"},
+			Origin:    "station1",
+			Date:      "2025-04-01",
 		}
 	})
 

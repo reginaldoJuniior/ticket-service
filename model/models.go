@@ -14,7 +14,6 @@ type Route struct {
 type Service struct {
 	ID      string
 	RouteID string
-	Date    string
 }
 
 type Carriage struct {
@@ -55,6 +54,7 @@ type Booking struct {
 	Seat        Seat
 	Origin      string
 	Destination string
+	Date        string
 }
 
 func (b *Booking) Validate() (bool, error) {
@@ -70,7 +70,9 @@ func (b *Booking) Validate() (bool, error) {
 	if b.Destination == "" {
 		return false, errors.New("destination is required")
 	}
-
+	if b.Date == "" {
+		return false, errors.New("date is required")
+	}
 	validate, err := b.Passenger.Validate()
 	if err != nil {
 		return false, err

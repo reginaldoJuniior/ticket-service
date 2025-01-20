@@ -87,6 +87,7 @@ var _ = Describe("BookingReservation", func() {
 			Seat:        model.Seat{ID: "A11", ComfortZone: "second-class"},
 			Origin:      "Paris",
 			Destination: "London",
+			Date:        "2025-10-01",
 		}
 	})
 
