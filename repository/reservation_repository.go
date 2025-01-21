@@ -222,3 +222,13 @@ func (r *Reservations) FindPassengerByOriginDestination(origin, destination stri
 
 	return passengers, nil
 }
+
+func (r *Reservations) FindRoute(routeID string) (*model.Route, error) {
+	routes := r.data["routes"].([]model.Route)
+	for _, route := range routes {
+		if route.ID == routeID {
+			return &route, nil
+		}
+	}
+	return nil, errors.New("route not found")
+}

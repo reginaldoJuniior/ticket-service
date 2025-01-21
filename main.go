@@ -43,20 +43,20 @@ func extraQueries(client *http.SimulatedHTTPClient) {
 	response = client.Get("/Calais-Paris/passengers")
 	fmt.Println("Passengers between Calais and Paris:", response.GetBody())
 
-	// 4. Who is sitting on chair A11 in service 5160, on December 20th in Calais
+	// 4. Who is sitting on chair A51 in service 5160, on December 20th in Calais
 	response = client.Post("/bookings", model.Booking{
 		ID:          "B9",
 		Passenger:   model.Passenger{Name: "Eve"},
 		ServiceID:   "5160",
-		Seat:        model.Seat{ID: "A11", ComfortZone: "second-class"},
+		Seat:        model.Seat{ID: "A51", ComfortZone: "second-class"},
 		Origin:      "Calais",
 		Destination: "Paris",
 		Date:        "2025-12-20",
 	})
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-	response = client.Get("/5160/A11/2025-12-20/Calais/passenger")
-	fmt.Println("Passenger on chair A11 in service 5160 on December 20th in Calais:", response.GetBody())
+	response = client.Get("/5160/A51/2025-12-20/Calais/passenger")
+	fmt.Println("Passenger on chair A51 in service 5160 on December 20th in Calais:", response.GetBody())
 }
 
 func myTestRequests(client *http.SimulatedHTTPClient) {
@@ -75,8 +75,8 @@ func myTestRequests(client *http.SimulatedHTTPClient) {
 			ID:          "A11",
 			ComfortZone: "first-class",
 		},
-		Origin:      "Paris",
-		Destination: "London",
+		Origin:      "London",
+		Destination: "Paris",
 		Date:        "2025-10-01",
 	}
 	response = client.Post("/bookings", booking)
@@ -92,7 +92,7 @@ func myTestRequests(client *http.SimulatedHTTPClient) {
 	response = client.Get("/5160/A11/passengers")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
-	response = client.Get("/5160/boarding")
+	response = client.Get("/London/boarding")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
 	// Same seat as before but different service ID
@@ -104,8 +104,8 @@ func myTestRequests(client *http.SimulatedHTTPClient) {
 		},
 		ServiceID:   "5161",
 		Seat:        model.Seat{ID: "A12", ComfortZone: "second-class"},
-		Origin:      "London",
-		Destination: "Amsterdam",
+		Origin:      "Paris",
+		Destination: "Rotterdam",
 		Date:        "2025-10-01",
 	}
 	response = client.Post("/bookings", booking)
@@ -119,14 +119,14 @@ func myTestRequests(client *http.SimulatedHTTPClient) {
 		ServiceID:   "5161",
 		Seat:        model.Seat{ID: "A12", ComfortZone: "second-class"},
 		Origin:      "Paris",
-		Destination: "Berlin",
+		Destination: "Amsterdam",
 		Date:        "2025-10-01",
 	}
 	response = client.Post("/bookings", booking)
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 
 	// Query passengers boarding at London
-	response = client.Get("/London/passengers")
+	response = client.Get("/London/boarding")
 	fmt.Println(response.GetStatusCode(), response.GetBody())
 }
 
@@ -135,9 +135,9 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 		ID:          "B3",
 		Passenger:   model.Passenger{Name: "Alice"},
 		ServiceID:   "5160",
-		Seat:        model.Seat{ID: "A11", ComfortZone: "first-class"},
-		Origin:      "Paris",
-		Destination: "Amsterdam",
+		Seat:        model.Seat{ID: "A21", ComfortZone: "first-class"},
+		Origin:      "London",
+		Destination: "Calais",
 		Date:        "2021-04-01",
 	})
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -146,9 +146,9 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 		ID:          "B4",
 		Passenger:   model.Passenger{Name: "Bob"},
 		ServiceID:   "5160",
-		Seat:        model.Seat{ID: "A12", ComfortZone: "first-class"},
-		Origin:      "Paris",
-		Destination: "Amsterdam",
+		Seat:        model.Seat{ID: "A22", ComfortZone: "first-class"},
+		Origin:      "London",
+		Destination: "Calais",
 		Date:        "2021-04-01",
 	})
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -158,9 +158,9 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 		ID:          "B3",
 		Passenger:   model.Passenger{Name: "Alice"},
 		ServiceID:   "5160",
-		Seat:        model.Seat{ID: "A11", ComfortZone: "first-class"},
-		Origin:      "Paris",
-		Destination: "Amsterdam",
+		Seat:        model.Seat{ID: "A21", ComfortZone: "first-class"},
+		Origin:      "London",
+		Destination: "Calais",
 		Date:        "2021-04-01",
 	})
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -168,8 +168,8 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 	response = client.Post("/bookings", model.Booking{
 		ID:          "B4",
 		Passenger:   model.Passenger{Name: "Bob"},
-		ServiceID:   "5160",
-		Seat:        model.Seat{ID: "A12", ComfortZone: "first-class"},
+		ServiceID:   "5161",
+		Seat:        model.Seat{ID: "A22", ComfortZone: "first-class"},
 		Origin:      "Paris",
 		Destination: "Amsterdam",
 		Date:        "2021-04-01",
@@ -179,7 +179,7 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 	response = client.Post("/bookings", model.Booking{
 		ID:          "B5",
 		Passenger:   model.Passenger{Name: "Charlie"},
-		ServiceID:   "5161",
+		ServiceID:   "5160",
 		Seat:        model.Seat{ID: "H1", ComfortZone: "second-class"},
 		Origin:      "London",
 		Destination: "Paris",
@@ -190,7 +190,7 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 	response = client.Post("/bookings", model.Booking{
 		ID:          "B6",
 		Passenger:   model.Passenger{Name: "Dave"},
-		ServiceID:   "5161",
+		ServiceID:   "5160",
 		Seat:        model.Seat{ID: "N5", ComfortZone: "second-class"},
 		Origin:      "London",
 		Destination: "Paris",
@@ -226,8 +226,8 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 		Passenger:   model.Passenger{Name: "Charlie"},
 		ServiceID:   "5161",
 		Seat:        model.Seat{ID: "H1", ComfortZone: "second-class"},
-		Origin:      "London",
-		Destination: "Paris",
+		Origin:      "Paris",
+		Destination: "Amsterdam",
 		Date:        "2021-04-01",
 	})
 	fmt.Println(response.GetStatusCode(), response.GetBody())
@@ -235,7 +235,7 @@ func assessmentRequests(client *http.SimulatedHTTPClient) {
 	response = client.Post("/bookings", model.Booking{
 		ID:          "B6",
 		Passenger:   model.Passenger{Name: "Dave"},
-		ServiceID:   "5161",
+		ServiceID:   "5160",
 		Seat:        model.Seat{ID: "N5", ComfortZone: "second-class"},
 		Origin:      "London",
 		Destination: "Paris",

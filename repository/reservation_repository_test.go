@@ -103,4 +103,14 @@ var _ = Describe("Reservations", func() {
 		_, err := reservations.FindPassengerByOriginDestination("station1", "station3")
 		Expect(err).To(Equal(errors.New("passenger not found")))
 	})
+
+	It("FindRoute returns a route by origin and destination", func() {
+		route, err := reservations.FindRoute("route1")
+		Expect(err).To(BeNil())
+		Expect(len(route.Stops)).To(Equal(4))
+		Expect(route.Stops[0].Name).To(Equal("London"))
+		Expect(route.Stops[1].Name).To(Equal("Ashford"))
+		Expect(route.Stops[2].Name).To(Equal("Calais"))
+		Expect(route.Stops[3].Name).To(Equal("Paris"))
+	})
 })

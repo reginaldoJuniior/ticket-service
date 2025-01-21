@@ -80,6 +80,16 @@ func (m *MockReservationRepository) FindPassengerByServiceSeatDate(serviceID, se
 	return model.Passenger{}, nil
 }
 
+func (m *MockReservationRepository) FindRoute(routeID string) (*model.Route, error) {
+	return &model.Route{
+		ID: routeID,
+		Stops: []model.Station{
+			{Name: "Paris"},
+			{Name: "London"},
+		},
+	}, nil
+}
+
 func (m *MockReservationRepository) FindPassengerByOriginDestination(origin string, destination string) ([]model.Passenger, error) {
 	list := make([]model.Passenger, 0)
 	for _, booking := range m.bookings {
@@ -127,6 +137,12 @@ var _ = Describe("BookingReservation", func() {
 		_ = bookingReservation.CreateBooking(booking)
 		err := bookingReservation.CreateBooking(booking)
 		Expect(err).To(Equal(errors.New("seat is already booked")))
+	})
+
+	It("CreateBooking fails if booking origin and destination are not in the route", func() {
+		booking.Origin = "Berlin"
+		err := bookingReservation.CreateBooking(booking)
+		Expect(err).To(Equal(errors.New("origin and destination are not in the route")))
 	})
 
 	It("GetAllBookings returns all bookings", func() {

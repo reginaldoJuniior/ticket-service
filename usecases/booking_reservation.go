@@ -17,6 +17,7 @@ type ReservationRepository interface {
 	FindPassengerBySeat(serviceID, seatID string) (*model.Passenger, error)
 	FindPassengerByServiceSeatDate(serviceID, seatID, date string) (model.Passenger, error)
 	FindPassengerByOriginDestination(origin string, destination string) ([]model.Passenger, error)
+	FindRoute(routeID string) (*model.Route, error)
 }
 
 // BookingReservation is a use case for booking reservation
@@ -38,12 +39,43 @@ func (b *BookingReservation) CreateBooking(booking model.Booking) error {
 	}
 
 	// Check if service exists
-	_, err = b.reservationRepo.FindServiceByID(booking.ServiceID)
+	service, err := b.reservationRepo.FindServiceByID(booking.ServiceID)
 	if err != nil {
 		return err
 	}
 
+	route, err := b.reservationRepo.FindRoute(service.RouteID)
+	if err != nil {
+		return err
+	}
+
+	// Check if the origin and destination are in the route
+	validRoute := isOriginAndDestinationInRoute(*route, booking.Origin, booking.Destination)
+	if !validRoute {
+		return errors.New("origin and destination are not in the route")
+	}
+
 	return b.reservationRepo.SaveBook(booking)
+}
+
+// isOriginAndDestinationInRoute checks if the origin and destination are in the route
+// respecting the order
+func isOriginAndDestinationInRoute(route model.Route, origin, destination string) bool {
+	bookingRoute := []string{
+		origin,
+		destination,
+	}
+
+	for i, j := 0, 0; i < len(route.Stops); i++ {
+		if route.Stops[i].Name == bookingRoute[j] {
+			j++ // Move to the next station
+			if j == len(bookingRoute) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (b *BookingReservation) GetAllBookings() []model.Booking {

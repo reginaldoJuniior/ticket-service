@@ -79,7 +79,7 @@ func (client *SimulatedHTTPClient) Get(url string) *HTTPResponse {
 			return &HTTPResponse{StatusCode: 400, Body: err.Error()}
 		}
 		return &HTTPResponse{StatusCode: 200, Body: passenger}
-	case len(parts) == 3 && parts[2] == "passenger":
+	case len(parts) == 3 && parts[2] == "passengers":
 		origin := strings.Split(parts[1], "-")[0]
 		destination := strings.Split(parts[1], "-")[1]
 		passengers, err := client.handle.GetPassengersByOriginDestination(origin, destination)
